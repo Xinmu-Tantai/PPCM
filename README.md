@@ -1,57 +1,86 @@
 # PPCM
 
-**Parallel Path Causal Modeling** for speculative decoding.
+**Many Paths, One Pass: Parallel Causal Modeling for Speculative Decoding**
 
-PPCM takes the Top-7 draft candidates and jointly models adjacent positions with a three-layer encoder:
+Parallel drafting predicts multiple future tokens in one forward pass, but independent position-wise predictions weaken intra-block dependencies. We find that candidate generation is not the main bottleneck: the target-model token is covered by the drafter’s **Top-7** candidates in **99.5%** of cases. The remaining problem is composing those candidates into causally consistent paths.
 
-1. **CCEL** — Causal Context Encoding Layer  
-2. **CTIL** — Candidate Token Interaction Layer  
-3. **CPRL** — Causal Path Refinement Layer  
+**Parallel Path Causal Modeling (PPCM)** converts temporal autoregressive dependencies into structured visibility constraints and models candidate paths in parallel. At each speculative position, PPCM takes the Top-7 candidates and jointly models adjacent positions with a three-layer encoder:
 
-This repository is a vLLM serving stack with PPCM enabled. The released checkpoint packs a 5-layer causal draft head and the PPCM encoder into one set of weights.
+1. **CCEL** — Causal Context Encoding Layer
+2. **CTIL** — Candidate Token Interaction Layer
+3. **CPRL** — Causal Path Refinement Layer
+
+CCEL captures causal dependencies across positions, CTIL models interactions among candidates at each position, and CPRL propagates refined representations along the causal direction. All candidates are processed in one forward pass. PPCM then ranks paths and sends the highest-ranked path to the target model for verification.
+
+<p align="center">
+  <img src="docs/assets/ppcm/fig4_architecture.png" alt="PPCM architecture: CCEL, CTIL, CPRL, then path scoring">
+</p>
+<p align="center"><em>PPCM encoder over the Top-7 candidate lattice: CCEL → CTIL → CPRL, then path scoring and target verification.</em></p>
+
+With only **~9M** extra parameters, PPCM is evaluated on **two target models** and seven benchmarks (GSM8K, MATH-500, AIME25, HumanEval, MBPP, LiveCodeBench, MT-Bench), draft length **L = 7**.
 
 | | Link |
 |---|---|
-| Code | [github.com/Xinmu-Tantai/PPCM](https://github.com/Xinmu-Tantai/PPCM) |
-| Weights | [huggingface.co/Xinmu7/PPCM](https://huggingface.co/Xinmu7/PPCM) |
+| Paper code | [github.com/Xinmu-Tantai/PPCM](https://github.com/Xinmu-Tantai/PPCM) |
+| Released weights (Qwen3-8B) | [huggingface.co/Xinmu7/PPCM](https://huggingface.co/Xinmu7/PPCM) |
 
-## Model
+## Motivation
 
-The public checkpoint is **Qwen3-8B-PPCM** (`PPCMDraftModel`):
+Top-7 already covers most target tokens; extra candidates add little recall, so the remaining gap is path consistency rather than candidate generation.
 
-- Target: [Qwen3-8B](https://huggingface.co/Qwen/Qwen3-8B)
-- Draft: 5-layer causal draft, hidden size and vocabulary aligned with Qwen3-8B
-- PPCM: CCEL → CTIL → CPRL over Top-7 candidates
-- Speculative length: **7** (`block_size=8`)
-- Tree width: **7**
+<p align="center">
+  <img src="docs/assets/ppcm/fig2_recall_k.png" width="48%" alt="Recall@K vs Top-K">
+  <img src="docs/assets/ppcm/fig3_recall_position.png" width="48%" alt="Recall@1 vs Recall@7 by draft position">
+</p>
+<p align="center"><em>Left: Recall@K saturates at Top-7 (94.89%). Right: Recall@7 stays high across draft positions while Recall@1 drops.</em></p>
 
-Download the weights from [Xinmu7/PPCM](https://huggingface.co/Xinmu7/PPCM). The Target Qwen3-8B checkpoint is not included and must be loaded separately.
+## Models
+
+PPCM is reported on:
+
+| Target | Status |
+|---|---|
+| [Qwen3-8B](https://huggingface.co/Qwen/Qwen3-8B) | Weights released |
+| [Qwen3.6-35B-A3B](https://huggingface.co/Qwen/Qwen3.6-35B-A3B) | Paper results only; weights not released |
+
+The public checkpoint is **Qwen3-8B-PPCM** (`PPCMDraftModel`): a 5-layer causal draft plus the PPCM encoder in one `model.safetensors`. Load the Target [Qwen3-8B](https://huggingface.co/Qwen/Qwen3-8B) separately. Speculative length is **7** (`block_size = 8`), tree width **7**.
+
+On Qwen3-8B / GSM8K (T = 0, L = 7), PPCM reaches **τ = 5.97** and **5.18×** speedup with **8.8M** additional parameters (vs DSpark 77.8M / 4.63×). Qwen3.6-35B-A3B uses the same PPCM recipe in the paper; this repo only ships Qwen3-8B weights.
+
+<p align="center">
+  <img src="docs/assets/ppcm/fig1_tradeoff.png" alt="Acceptance length–speedup trade-off on Qwen3-8B / GSM8K">
+</p>
+<p align="center"><em>Acceptance length–speedup trade-off on Qwen3-8B / GSM8K. PPCM sits at τ ≈ 5.97 and 5.18×.</em></p>
+
+Removing any encoder layer or the path scorer hurts coverage, acceptance length, and throughput. PPCM also keeps higher acceptance at deeper speculative positions.
+
+<p align="center">
+  <img src="docs/assets/ppcm/fig5_ablation.png" width="48%" alt="Ablation of PPCM components">
+  <img src="docs/assets/ppcm/fig6_position_accept.png" width="48%" alt="Position-wise acceptance rates">
+</p>
+<p align="center"><em>Left: ablation of CCEL / CTIL / CPRL / path scoring. Right: position-wise acceptance rates (L = 7).</em></p>
 
 ## Usage
 
-Point the draft / PPCM path at the Hugging Face repo (or a local copy) and run with **7 speculative tokens**:
-
 ```bash
-# Target: Qwen/Qwen3-8B
-# Draft + PPCM: Xinmu7/PPCM
-# NUM_SPECULATIVE_TOKENS=7
+# Target
+TARGET_MODEL=Qwen/Qwen3-8B
+
+# Draft + PPCM (Qwen3-8B only)
+DRAFT_MODEL=Xinmu7/PPCM
+
+# Must match the released checkpoint
+NUM_SPECULATIVE_TOKENS=7
 ```
 
-Example scripts live under `examples/offline_inference/` (`ppcm_profiling_*.sh`). Override:
-
-```bash
-TARGET_MODEL=/path/to/Qwen3-8B
-DRAFT_MODEL=/path/to/Qwen3-8B-PPCM
-```
-
-This tree is source-only. Native CUDA extensions are not shipped here; build them from this repository before serving.
+Example scripts: `examples/offline_inference/ppcm_profiling_*.sh`. This tree is source-only; build native CUDA extensions before serving.
 
 ## Code map
 
-- PPCM encoder: `vllm/model_executor/models/dflash_tree_post_head.py` (`CCEL` → `CTIL` → `CPRL`)
-- Draft + PPCM loader: `vllm/model_executor/models/qwen3_dflash.py` (reads draft tensors and `ppcm.*` from the same `model.safetensors`)
-- Hugging Face custom class: `ppcm.py` in [Xinmu7/PPCM](https://huggingface.co/Xinmu7/PPCM) (`PPCMDraftModel`)
+- Encoder: `vllm/model_executor/models/dflash_tree_post_head.py` (`CCEL` → `CTIL` → `CPRL`)
+- Loader: `vllm/model_executor/models/qwen3_dflash.py` (draft tensors and `ppcm.*` in the same file)
+- Hugging Face class: `ppcm.py` in [Xinmu7/PPCM](https://huggingface.co/Xinmu7/PPCM)
 
 ## License
 
-Apache License 2.0. This project is built on [vLLM](https://github.com/vllm-project/vllm).
+Apache License 2.0. Built on [vLLM](https://github.com/vllm-project/vllm).
