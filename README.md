@@ -47,18 +47,6 @@ The public checkpoint is **Qwen3-8B-PPCM** (`PPCMDraftModel`): a 5-layer causal 
 
 On Qwen3-8B / GSM8K (T = 0, L = 7), PPCM reaches **τ = 5.97** and **5.18×** speedup with **8.8M** additional parameters (vs DSpark 77.8M / 4.63×). Qwen3.6-35B-A3B uses the same PPCM recipe in the paper; this repo only ships Qwen3-8B weights.
 
-<p align="center">
-  <img src="docs/assets/ppcm/fig1_tradeoff.png" alt="Acceptance length–speedup trade-off on Qwen3-8B / GSM8K">
-</p>
-<p align="center"><em>Acceptance length–speedup trade-off on Qwen3-8B / GSM8K. PPCM sits at τ ≈ 5.97 and 5.18×.</em></p>
-
-Removing any encoder layer or the path scorer hurts coverage, acceptance length, and throughput. PPCM also keeps higher acceptance at deeper speculative positions.
-
-<p align="center">
-  <img src="docs/assets/ppcm/fig5_ablation.png" width="48%" alt="Ablation of PPCM components">
-  <img src="docs/assets/ppcm/fig6_position_accept.png" width="48%" alt="Position-wise acceptance rates">
-</p>
-<p align="center"><em>Left: ablation of CCEL / CTIL / CPRL / path scoring. Right: position-wise acceptance rates (L = 7).</em></p>
 
 ## Usage
 
