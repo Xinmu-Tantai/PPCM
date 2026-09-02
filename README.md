@@ -41,7 +41,7 @@ PPCM is reported on:
 | Target | Status |
 |---|---|
 | [Qwen3-8B](https://huggingface.co/Qwen/Qwen3-8B) | Weights released |
-| [Qwen3.6-35B-A3B](https://huggingface.co/Qwen/Qwen3.6-35B-A3B) | Paper results only; weights not released |
+| [Qwen3.6-35B-A3B](https://huggingface.co/Qwen/Qwen3.6-35B-A3B) | Weights released |
 
 The public checkpoint is **Qwen3-8B-PPCM** (`PPCMDraftModel`): a 5-layer causal draft plus the PPCM encoder in one `model.safetensors`. Load the Target [Qwen3-8B](https://huggingface.co/Qwen/Qwen3-8B) separately. Speculative length is **7** (`block_size = 8`), tree width **7**.
 
