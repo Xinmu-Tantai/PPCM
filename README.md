@@ -43,7 +43,7 @@ PPCM is reported on:
 | [Qwen3-8B](https://huggingface.co/Qwen/Qwen3-8B) | Weights released |
 | [Qwen3.6-35B-A3B](https://huggingface.co/Qwen/Qwen3.6-35B-A3B) | Paper results only; weights not released |
 
-The public checkpoint is **Qwen3-8B-PPCM** (`PPCMDraftModel`): a 5-layer causal draft plus the PPCM encoder in one `model.safetensors`. Load the Target [Qwen3-8B](https://huggingface.co/Qwen/Qwen3-8B) separately. Speculative length is **7** (`block_size = 8`), tree width **7**.
+The public checkpoint is **Qwen3-8B-PPCM** (`PPCMDraftModel`): a 5-layer causal draft plus the PPCM encoder in one `model.safetensors`. Load the Target [Qwen3-8B](https://huggingface.co/Qwen/Qwen3-8B) separately. Speculative length is **7** (`block_size = 8`), Top-7 candidates.
 
 On Qwen3-8B / GSM8K (T = 0, L = 7), PPCM reaches **τ = 5.97** and **5.18×** speedup with **8.8M** additional parameters (vs DSpark 77.8M / 4.63×). Qwen3.6-35B-A3B uses the same PPCM recipe in the paper; this repo only ships Qwen3-8B weights.
 
@@ -73,7 +73,7 @@ DRAFT_MODEL=Xinmu7/PPCM
 NUM_SPECULATIVE_TOKENS=7
 ```
 
-Example scripts: `examples/offline_inference/ppcm_profiling_*.sh`. This tree is source-only; build native CUDA extensions before serving.
+Example scripts: `examples/offline_inference/ppcm_profiling_*.sh`. This repo is source-only; build native CUDA extensions before serving.
 
 ## Code map
 
