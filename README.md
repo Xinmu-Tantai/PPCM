@@ -2,7 +2,7 @@
 
 **Many Paths, One Pass: Parallel Causal Modeling for Speculative Decoding**
 
-Parallel drafting predicts multiple future tokens in one forward pass, but independent position-wise predictions weaken intra-block dependencies. We find that candidate generation is not the main bottleneck: the target-model token is covered by the drafter’s **Top-7** candidates in **99.5%** of cases. The remaining problem is composing those candidates into causally consistent paths.
+Parallel drafting predicts multiple future tokens in one forward pass, but independent position-wise predictions weaken intra-block dependencies. We find that candidate generation is not the main bottleneck: the target-model token is covered by the drafter’s **Top-7** candidates in **94.89%** of cases. The remaining problem is composing those candidates into causally consistent paths.
 
 **Parallel Path Causal Modeling (PPCM)** converts temporal autoregressive dependencies into structured visibility constraints and models candidate paths in parallel. At each speculative position, PPCM takes the Top-7 candidates and jointly models adjacent positions with a three-layer encoder:
 
