@@ -21,8 +21,8 @@ With only **~8.8M** extra parameters, PPCM is evaluated on **two target models**
 
 | | Link |
 |---|---|
-| Paper code | [github.com/Xinmu-Tantai/PPCM](https://github.com/Xinmu-Tantai/PPCM) |
-| Released weights | [huggingface.co/Xinmu7/PPCM](https://huggingface.co/Xinmu7/PPCM) |
+| Code | [github.com/Xinmu-Tantai/PPCM](https://github.com/Xinmu-Tantai/PPCM) |
+| Weights | [huggingface.co/Xinmu7/PPCM](https://huggingface.co/Xinmu7/PPCM) |
 
 ## Motivation
 
