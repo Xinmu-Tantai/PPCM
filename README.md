@@ -17,7 +17,7 @@ CCEL captures causal dependencies across positions, CTIL models interactions amo
 </p>
 <p align="center"><em>PPCM encoder over the Top-7 candidate lattice: CCEL → CTIL → CPRL, then path scoring and target verification.</em></p>
 
-With only **~9M** extra parameters, PPCM is evaluated on **two target models** and seven benchmarks (GSM8K, MATH-500, AIME25, HumanEval, MBPP, LiveCodeBench, MT-Bench), draft length **L = 7**.
+With only **~8.8M** extra parameters, PPCM is evaluated on **two target models** and seven benchmarks (GSM8K, MATH-500, AIME25, HumanEval, MBPP, LiveCodeBench, MT-Bench), draft length **L = 7**.
 
 | | Link |
 |---|---|
