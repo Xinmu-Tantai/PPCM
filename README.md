@@ -63,11 +63,7 @@ NUM_SPECULATIVE_TOKENS=7
 
 Example scripts: `examples/offline_inference/ppcm_profiling_*.sh`. This repo is source-only; build native CUDA extensions before serving.
 
-## Code map
 
-- Encoder: `vllm/model_executor/models/dflash_tree_post_head.py` (`CCEL` → `CTIL` → `CPRL`)
-- Loader: `vllm/model_executor/models/qwen3_dflash.py` (draft tensors and `ppcm.*` in the same file)
-- Hugging Face class: `ppcm.py` in [Xinmu7/PPCM](https://huggingface.co/Xinmu7/PPCM)
 
 ## License
 
