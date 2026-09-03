@@ -45,8 +45,7 @@ PPCM is reported on:
 
 The public checkpoint is **Qwen3-8B-PPCM** (`PPCMDraftModel`): a 5-layer causal draft plus the PPCM encoder in one `model.safetensors`. Load the Target [Qwen3-8B](https://huggingface.co/Qwen/Qwen3-8B) separately. Speculative length is **7** (`block_size = 8`), Top-7 candidates.
 
-On Qwen3-8B / GSM8K (T = 0, L = 7), PPCM reaches **τ = 5.97** and **5.18×** speedup with **8.8M** additional parameters (vs DSpark 77.8M / 4.63×). Qwen3.6-35B-A3B uses the same PPCM recipe in the paper; this repo only ships Qwen3-8B weights.
-
+On Qwen3-8B / GSM8K (T = 0, L = 7), PPCM reaches **τ = 5.97** and **5.18×** speedup with **8.8M** additional parameters (vs DSpark 77.8M / 4.63×).
 
 ## Usage
 
